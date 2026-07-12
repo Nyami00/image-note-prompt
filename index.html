@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0A1023">
+<title>noteカバー画像 プロンプトメーカー v1.0</title>
+<style>
+  :root {
+    --bg0: #080D1F;
+    --bg1: #101C42;
+    --surface: rgba(255, 255, 255, 0.045);
+    --surface-2: rgba(255, 255, 255, 0.08);
+    --line: rgba(255, 255, 255, 0.13);
+    --ink: #F2F4F8;
+    --ink-2: #A8B2CE;
+    --ink-3: #707B9E;
+    --accent: #F5872E;
+    --ok: #4CC38A;
+    --warn: #F2C230;
+    --bad: #F26D6D;
+    --radius: 10px;
+    --font: "Hiragino Kaku Gothic ProN", "Hiragino Sans", "Noto Sans JP", "Yu Gothic UI", Meiryo, sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  [hidden] { display: none !important; }
+
+  html { -webkit-text-size-adjust: 100%; }
+
+  body {
+    font-family: var(--font);
+    background: linear-gradient(160deg, var(--bg0) 0%, var(--bg1) 70%, #16255C 100%);
+    background-attachment: fixed;
+    color: var(--ink);
+    line-height: 1.7;
+    min-height: 100vh;
+    font-size: 15px;
+  }
+
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 0 20px 64px; }
+
+  /* ---------- header ---------- */
+  header {
+    position: relative;
+    padding: 44px 0 30px;
+    overflow: hidden;
+  }
+  header::before {
+    content: "";
+    position: absolute;
+    top: -60px; right: -12%;
+    width: 55%; height: 220px;
+    background: linear-gradient(100deg, transparent 0%, var(--accent) 100%);
+    opacity: 0.16;
+    transform: skewX(-24deg);
+    pointer-events: none;
+    transition: background 0.4s;
+  }
+  .eyebrow {
+    font-size: 11px;
+    letter-spacing: 0.22em;
+    color: var(--accent);
+    font-weight: 700;
+    text-transform: uppercase;
+    transition: color 0.4s;
+  }
+  header h1 {
+    font-size: clamp(24px, 4.2vw, 38px);
+    font-weight: 900;
+    letter-spacing: 0.01em;
+    text-wrap: balance;
+    margin: 6px 0 8px;
+  }
+  header p { color: var(--ink-2); font-size: 13.5px; max-width: 46em; }
+
+  /* ---------- layout ---------- */
+  .grid {
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+    gap: 26px;
+    align-items: start;
+  }
+  @media (max-width: 960px) {
+    .grid { grid-template-columns: minmax(0, 1fr); }
+    .col-out { position: static; }
+  }
+  .col { display: flex; flex-direction: column; gap: 20px; min-width: 0; }
+  .col-out { position: sticky; top: 20px; }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 20px;
+    backdrop-filter: blur(6px);
+  }
+  .card h2 {
+    font-size: 15px;
+    font-weight: 800;
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .card h2 .step {
+    flex: none;
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: var(--bg0);
+    font-size: 12px;
+    font-weight: 900;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.4s;
+  }
+  .card .desc { color: var(--ink-2); font-size: 12.5px; margin-bottom: 12px; }
+
+  /* ---------- inputs ---------- */
+  textarea, input[type="text"], select {
+    width: 100%;
+    background: rgba(5, 9, 24, 0.55);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    color: var(--ink);
+    font-family: var(--font);
+    font-size: 14px;
+    padding: 10px 12px;
+    line-height: 1.6;
+  }
+  textarea:focus, input:focus, select:focus {
+    outline: 2px solid var(--accent);
+    outline-offset: -1px;
+    border-color: transparent;
+  }
+  textarea { resize: vertical; }
+  #paste { min-height: 170px; }
+  #f-body { min-height: 110px; }
+  ::placeholder { color: var(--ink-3); }
+  select { appearance: none; cursor: pointer; }
+  .select-wrap { position: relative; }
+  .select-wrap::after {
+    content: "▾";
+    position: absolute;
+    right: 12px; top: 50%;
+    transform: translateY(-50%);
+    color: var(--ink-3);
+    pointer-events: none;
+  }
+
+  .field { margin-bottom: 14px; }
+  .field:last-child { margin-bottom: 0; }
+  .field-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 10px;
+    margin-bottom: 5px;
+  }
+  label { font-size: 12.5px; font-weight: 700; color: var(--ink-2); }
+  .counter { font-size: 12px; font-variant-numeric: tabular-nums; color: var(--ink-3); }
+  .counter.ok { color: var(--ok); }
+  .counter.warn { color: var(--warn); }
+  .counter.bad { color: var(--bad); font-weight: 700; }
+
+  .btn-row { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+  button {
+    font-family: var(--font);
+    font-size: 13px;
+    font-weight: 700;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--surface-2);
+    color: var(--ink);
+    padding: 8px 14px;
+    cursor: pointer;
+    transition: background 0.15s, transform 0.1s;
+  }
+  button:hover { background: rgba(255, 255, 255, 0.14); }
+  button:active { transform: translateY(1px); }
+  button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  button.primary {
+    background: var(--accent);
+    border-color: transparent;
+    color: #0A1023;
+    font-size: 14px;
+    font-weight: 900;
+    padding: 12px 18px;
+    width: 100%;
+    transition: background 0.4s, filter 0.15s, transform 0.1s;
+  }
+  button.primary:hover { filter: brightness(1.08); }
+
+  .toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    user-select: none;
+    font-size: 13px;
+    color: var(--ink-2);
+    font-weight: 700;
+  }
+  .toggle input { accent-color: var(--accent); width: 16px; height: 16px; cursor: pointer; }
+
+  /* ---------- preview ---------- */
+  .preview {
+    container-type: inline-size;
+    aspect-ratio: 1.91 / 1;
+    border-radius: 8px;
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(115deg, #0A1330 0%, #16295E 55%, #1D3A80 100%);
+    border: 1px solid var(--line);
+  }
+  .preview .band {
+    position: absolute;
+    inset: -20% auto -20% 58%;
+    width: 70%;
+    background: linear-gradient(100deg, var(--accent), transparent 85%);
+    opacity: 0.42;
+    transform: skewX(-18deg);
+    transition: background 0.4s;
+  }
+  .preview .glow {
+    position: absolute;
+    top: -30%; right: -10%;
+    width: 55%; height: 90%;
+    background: radial-gradient(closest-side, var(--accent), transparent);
+    opacity: 0.22;
+    transition: background 0.4s;
+  }
+  .preview .safe {
+    position: absolute;
+    inset: 20%;
+    border: 1px dashed rgba(255, 255, 255, 0.28);
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2%;
+  }
+  .preview .safe-label {
+    position: absolute;
+    bottom: calc(20% - 1.7em);
+    left: 20%;
+    font-size: 10px;
+    color: rgba(255, 255, 255, 0.4);
+    letter-spacing: 0.08em;
+  }
+  .preview .copy-text {
+    font-weight: 900;
+    font-size: 7.2cqw;
+    line-height: 1.35;
+    text-align: center;
+    color: #F6F7FA;
+    text-shadow: 0 2px 18px rgba(0, 0, 0, 0.35);
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    word-break: break-word;
+  }
+  .preview .copy-text.empty { color: rgba(255, 255, 255, 0.35); font-size: 4cqw; font-weight: 700; }
+
+  /* ---------- chips ---------- */
+  .chips { display: flex; gap: 8px; flex-wrap: wrap; margin: 12px 0; }
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--ink-2);
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 3px 11px;
+  }
+  .chip .dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: var(--accent);
+    flex: none;
+    transition: background 0.4s;
+  }
+  .chip.alert { color: var(--bad); border-color: var(--bad); }
+  .chip.special { color: var(--warn); border-color: var(--warn); }
+
+  /* ---------- output ---------- */
+  pre.out {
+    background: rgba(5, 9, 24, 0.65);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 14px;
+    font-family: var(--font);
+    font-size: 12.5px;
+    line-height: 1.75;
+    color: var(--ink-2);
+    white-space: pre-wrap;
+    word-break: break-word;
+    max-height: 320px;
+    overflow-y: auto;
+    margin-bottom: 12px;
+  }
+  pre.out.mini { max-height: none; font-size: 13px; }
+
+  /* ---------- footer ---------- */
+  .steps { counter-reset: n; list-style: none; display: grid; gap: 10px; margin-top: 12px; }
+  .steps li {
+    counter-increment: n;
+    display: flex;
+    gap: 12px;
+    color: var(--ink-2);
+    font-size: 13px;
+  }
+  .steps li::before {
+    content: counter(n);
+    flex: none;
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    font-weight: 900;
+    font-size: 13px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 2px;
+    transition: color 0.4s, border-color 0.4s;
+  }
+  details { margin-top: 16px; color: var(--ink-2); font-size: 13px; }
+  summary { cursor: pointer; font-weight: 700; color: var(--ink); }
+  summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  details ul { padding-left: 1.4em; margin-top: 8px; display: grid; gap: 5px; }
+
+  footer.meta {
+    margin-top: 40px;
+    padding-top: 16px;
+    border-top: 1px solid var(--line);
+    color: var(--ink-3);
+    font-size: 12px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="eyebrow">note cover image — prompt maker</div>
+  <h1>noteカバー画像 プロンプトメーカー <span style="font-size:0.55em;color:var(--ink-2);font-weight:700;">v1.0</span></h1>
+  <p>Notionの記事をそのまま貼るだけで、手動作成用メタプロンプトが完成。カバー画像係v2正本（2026-07-06改訂・ボールドタイポ×ダイナミック背景）と同一設計。自動生成分とnoteフィード上で見た目が揃います。</p>
+</header>
+
+<main class="grid">
+
+  <!-- ============ 入力側 ============ -->
+  <div class="col">
+
+    <section class="card">
+      <h2><span class="step">1</span>Notionから貼り付け</h2>
+      <p class="desc">記事ページをコピーしてそのまま貼るだけ。「タイトル：」「カバーコピー：」「テーマ：」などのプロパティ行と本文を自動で振り分けます。プロパティが無ければ1行目をタイトル、残りを本文として扱います。</p>
+      <textarea id="paste" placeholder="ここにNotionの内容を貼り付け…
+
+例：
+タイトル：会議メモを3分で議事録に変える手順
+カバーコピー：未定
+テーマ：Copilot活用
+（以下、記事本文）"></textarea>
+      <div class="btn-row">
+        <button type="button" id="btn-sample">サンプルを入れる</button>
+        <button type="button" id="btn-clear">クリア</button>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2><span class="step">2</span>記事情報を確認・調整</h2>
+      <p class="desc">貼り付けから自動反映されます。手で直してもOK。</p>
+
+      <div class="field">
+        <div class="field-head"><label for="f-title">タイトル（必須）</label></div>
+        <input type="text" id="f-title" placeholder="記事タイトル">
+      </div>
+
+      <div class="field">
+        <div class="field-head">
+          <label for="f-copy">カバーコピー（任意・画像に入れる1行）</label>
+          <span class="counter" id="copy-counter">未定として出力</span>
+        </div>
+        <input type="text" id="f-copy" placeholder="空欄なら「未定」＝AIがタイトルから15〜20字に凝縮">
+      </div>
+
+      <div class="field">
+        <div class="field-head"><label for="f-theme">テーマ（任意・アクセント色が決まる）</label></div>
+        <div class="select-wrap">
+          <select id="f-theme">
+            <option value="">未指定（AIが記事内容から推定）</option>
+            <option value="企業AI推進">企業AI推進 → オレンジ</option>
+            <option value="Copilot活用">Copilot活用 → グリーン</option>
+            <option value="Claude活用">Claude活用 → コーラル</option>
+            <option value="AI副業">AI副業 → イエロー</option>
+            <option value="業務自動化">業務自動化 → スカイブルー</option>
+            <option value="AI×暮らし">AI×暮らし → ウォームベージュ</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field">
+        <div class="field-head"><label for="f-body">記事内容（全文または要約）</label></div>
+        <textarea id="f-body" placeholder="コピー・色・モチーフの判断にしか使われないので、全文コピペでも要約でも可"></textarea>
+      </div>
+
+      <div class="field">
+        <label class="toggle">
+          <input type="checkbox" id="f-special">
+          特別版（リアル連載の主力記事のみ：基調色を記事に合う配色へ変更可）
+        </label>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- ============ 出力側 ============ -->
+  <div class="col col-out">
+
+    <section class="card">
+      <h2><span class="step">3</span>プロンプト完成 → コピーしてChatGPT等へ</h2>
+
+      <div class="preview" aria-hidden="true">
+        <div class="glow"></div>
+        <div class="band"></div>
+        <div class="safe"><div class="copy-text empty" id="pv-copy">コピー未定（AIがタイトルから凝縮）</div></div>
+        <div class="safe-label">セーフゾーン60%（一覧表示で切れない範囲）</div>
+      </div>
+
+      <div class="chips">
+        <span class="chip"><span class="dot" id="chip-dot"></span><span id="chip-theme">テーマ未指定 → AIが色を推定</span></span>
+        <span class="chip" id="chip-copy">コピー：未定</span>
+        <span class="chip special" id="chip-special" hidden>特別版</span>
+        <span class="chip alert" id="chip-title" hidden>⚠ タイトル未入力</span>
+      </div>
+
+      <pre class="out" id="out"></pre>
+      <button type="button" class="primary" id="btn-copy">メタプロンプトをコピー</button>
+    </section>
+
+    <section class="card">
+      <h2>修正用ワンライナー（誤字があったとき・1回だけ）</h2>
+      <p class="desc">生成画像の文字を目視照合して、誤字があればこれを1回だけ送る。2回目も不一致なら画像なし公開でよい（設計上許容済み）。</p>
+      <pre class="out mini" id="out-fix"></pre>
+      <div class="btn-row">
+        <button type="button" id="btn-copy-fix">ワンライナーをコピー</button>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>生成後にやること</h2>
+      <ol class="steps">
+        <li>生成画像の文字を目視照合。誤字があれば上のワンライナーを1回だけ送る</li>
+        <li>noteの見出し画像に設定（トリミングで文字欠けがないか確認）</li>
+        <li>Notionの該当記事を「カバー画像=作成済」に更新。コピーを新規作成・短縮した場合は「カバーコピー」プロパティにも同じ文字列を保存（画像とNotionの記録を一致させる）</li>
+      </ol>
+      <details>
+        <summary>設計根拠（v2正本との整合点）</summary>
+        <ul>
+          <li>文字規則・構図・禁止事項・アクセント色表・1.91:1・セーフゾーン60%は、運用ページの「画像生成プロンプトテンプレ（正本）」と同一。手動作成分だけフィードで浮くことを防ぐ</li>
+          <li>v2で人間（Cowork）が事前に行う3判断（①コピー22字判定・短縮 ②テーマ→色 ③モチーフ選定）を、AI側の【手順】に内蔵。タイトルと本文を貼るだけで完結する</li>
+          <li>禁止事項に「特定の企業・所属を想起させる要素」を追加（note-nyamiスキル鉄則1：所属特定の禁止）</li>
+          <li>「特別版」スイッチ：リアル連載の主力記事で配色を変えたいときのみチェック。デフォルトはブランド標準</li>
+        </ul>
+      </details>
+    </section>
+
+  </div>
+</main>
+
+<footer class="meta">
+  noteカバー画像 手動作成用メタプロンプト v1.0（2026-07-13）／デザインシステム：カバー画像係v2正本（2026-07-06改訂）準拠
+</footer>
+
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  var $ = function (id) { return document.getElementById(id); };
+
+  var THEMES = {
+    "企業AI推進":  { color: "#F5872E", name: "オレンジ" },
+    "Copilot活用": { color: "#3DBE7B", name: "グリーン" },
+    "Claude活用":  { color: "#F1766B", name: "コーラル" },
+    "AI副業":      { color: "#F2C230", name: "イエロー" },
+    "業務自動化":  { color: "#54B4F0", name: "スカイブルー" },
+    "AI×暮らし":   { color: "#D8B48E", name: "ウォームベージュ" }
+  };
+  var DEFAULT_ACCENT = "#F5872E"; // 判断不能=オレンジ
+
+  var PROP_KEYS = {
+    title: ["タイトル", "題名", "記事タイトル", "title", "name", "名前"],
+    copy:  ["カバーコピー", "コピー", "キャッチコピー", "見出しコピー"],
+    theme: ["テーマ", "カテゴリ", "カテゴリー", "theme", "category"],
+    body:  ["記事内容", "記事本文", "本文", "内容", "要約"]
+  };
+  // Notionのプロパティでよく混ざるが、プロンプトには不要な行
+  var IGNORE_KEYS = [
+    "ステータス", "作成日", "公開日", "更新日", "最終更新", "カバー画像", "カバーコピー確認",
+    "タグ", "種別", "担当", "優先度", "日付", "公開url", "url",
+    "status", "created", "created time", "last edited", "tags", "date", "assignee"
+  ];
+
+  function normKey(k) {
+    return k.replace(/（[^）]*）|\([^)]*\)/g, "").trim().toLowerCase();
+  }
+  function keyIs(key, list) {
+    for (var i = 0; i < list.length; i++) {
+      if (key === list[i].toLowerCase()) return true;
+    }
+    return false;
+  }
+  function normTheme(v) {
+    if (!v) return "";
+    var s = v.toLowerCase();
+    if (s.indexOf("copilot") >= 0) return "Copilot活用";
+    if (s.indexOf("claude") >= 0) return "Claude活用";
+    if (v.indexOf("推進") >= 0 || v.indexOf("企業") >= 0) return "企業AI推進";
+    if (v.indexOf("副業") >= 0) return "AI副業";
+    if (v.indexOf("自動化") >= 0) return "業務自動化";
+    if (v.indexOf("暮らし") >= 0) return "AI×暮らし";
+    return "";
+  }
+
+  // --- Notion貼り付けテキストの解析 ---
+  function parseNotion(text) {
+    var lines = text.replace(/\r\n?/g, "\n").split("\n");
+    var r = { title: "", copy: "", theme: "", body: "" };
+    var bodyLines = [];
+    var inBody = false;
+    var titleSet = false;
+
+    for (var i = 0; i < lines.length; i++) {
+      var raw = lines[i];
+      if (inBody) { bodyLines.push(raw); continue; }
+
+      var line = raw.trim();
+      if (!line) continue;
+
+      var m = line.match(/^([^\t:：]{1,24})\s*(?:：|:|\t)\s*(.*)$/);
+      if (m) {
+        var key = normKey(m[1]);
+        var val = m[2].trim();
+        if (keyIs(key, PROP_KEYS.title)) { if (val) { r.title = val; titleSet = true; } continue; }
+        if (keyIs(key, PROP_KEYS.copy))  { r.copy = (val && val !== "未定") ? val : ""; continue; }
+        if (keyIs(key, PROP_KEYS.theme)) { r.theme = normTheme(val); continue; }
+        if (keyIs(key, PROP_KEYS.body))  { inBody = true; if (val) bodyLines.push(val); continue; }
+        if (keyIs(key, IGNORE_KEYS)) continue;
+        // 未知の「キー：値」行 → 本文の一部とみなす
+      }
+
+      if (!titleSet && !r.title) {
+        r.title = line.replace(/^#+\s*/, "");
+        titleSet = true;
+        continue;
+      }
+      inBody = true;
+      bodyLines.push(raw);
+    }
+
+    r.body = bodyLines.join("\n").replace(/^\n+|\n+$/g, "");
+    return r;
+  }
+
+  // --- メタプロンプト生成（v1.0の文面そのまま） ---
+  function buildPrompt(d) {
+    var head = d.special ? "特別版\n\n" : "";
+    return head +
+"あなたはnote記事のカバー画像（見出し画像）を作るアートディレクター兼デザイナーです。\n" +
+"以下の【記事情報】を読み、【手順】の順に判断してから、見出し画像を1枚生成してください。\n" +
+"目的は、note記事一覧の中で視線を止め、開きたくさせることです。\n" +
+"\n" +
+"【記事情報】\n" +
+"タイトル：" + d.title + "\n" +
+"カバーコピー（任意。画像に入れる1行。未定なら「未定」と書く）：" + (d.copy || "未定") + "\n" +
+"テーマ（任意）：" + d.theme + "\n" +
+"記事内容（全文または要約）：\n" +
+d.body + "\n" +
+"\n" +
+"【手順（生成前に必ずこの順で決める）】\n" +
+"1. カバーコピー確定：指定があれば一字一句そのまま使う。「未定」ならタイトルの核心を15〜20字（最大22字）の1行に凝縮する。煽り語（衝撃・必見・神・完全版 等）は使わない。\n" +
+"2. アクセント色決定：テーマから1色だけ選ぶ。テーマ未指定なら記事内容から推定する。\n" +
+"   企業AI推進=オレンジ／Copilot活用=グリーン／Claude活用=コーラル／AI副業=イエロー／業務自動化=スカイブルー／AI×暮らし=ウォームベージュ／判断不能=オレンジ\n" +
+"3. モチーフ選定：記事内容を象徴する「描ける具体物」を1つだけ選ぶ。抽象概念ではなく物にする。\n" +
+"   例：階段状に上がる折れ線グラフ／歯車と吹き出し／鍵のかかった書類／ノートPCから伸びる光の回路／積み上がるコインと電卓\n" +
+"4. 決定した「コピー／アクセント色／モチーフ」を1行で書き、承認を待たずにそのまま生成する。\n" +
+"\n" +
+"【文字（最重要・精度厳守）】\n" +
+"画像に入れる文字は手順1のカバーコピー1行だけです。一字一句そのまま、誤字・脱字・字体崩れなしで描画してください。\n" +
+"・極太の日本語ゴシック体。画像幅の80〜90%を使う特大サイズで、改行は最大2行まで\n" +
+"・文字色は背景と最大コントラスト（濃色背景×オフホワイト文字を基本）。可読性最優先\n" +
+"・文字は画像中央60%のセーフゾーン内に収める（一覧表示で上下左右が切れるため）\n" +
+"・指定した文字以外の文字・英字・数字は一切入れない\n" +
+"\n" +
+"【構図・スタイル（固定）】\n" +
+"・横長1.91:1（1920×1006目安）\n" +
+"・静的なフラット構成は禁止。動きのある構図にする：斜めに走る大胆な色面分割、または奥行きのあるグラデーションと光の差し込み。視線が自然にコピーへ流れ込む構図\n" +
+"・基調は濃紺のグラデーション（深い紺→明るい光へ）、アクセントは手順2の1色のみ。光・エッジ・色面の一部として強く効かせる\n" +
+"・モチーフは画面からはみ出すほど大きくスケール感を持たせ、シルエットや半透明で背景に大胆に配置する（文字の可読性は侵さない）\n" +
+"・微細なノイズ／光のグロー可。雑誌の特集扉やイベントのキービジュアルのような熱量を出す\n" +
+"※冒頭に「特別版」と指定された場合のみ、基調色を記事に合う配色へ変えてよい（文字規則・セーフゾーン・禁止事項は維持）\n" +
+"\n" +
+"【禁止】\n" +
+"人物の顔／実在のロゴ・商標・製品UIの模倣／特定の企業・所属を想起させる要素／透かし／要素の詰め込み（モチーフの複数配置・装飾小物）／指定外の文字／文字を覆う装飾\n" +
+"\n" +
+"【生成後】\n" +
+"画像内の文字とカバーコピーを一字一句照合し、一致・不一致を1行で報告してください。";
+  }
+
+  function buildFix(copy) {
+    return "デザインはそのまま、文字を「" + (copy || "{カバーコピー}") + "」に一字一句正確に修正してください。";
+  }
+
+  // --- 画面更新 ---
+  function charCount(s) {
+    var n = 0;
+    for (var i = 0; i < s.length; i++) {
+      var c = s.charCodeAt(i);
+      if (c >= 0xD800 && c <= 0xDBFF) i++; // サロゲートペアは1字と数える
+      n++;
+    }
+    return n;
+  }
+
+  function render() {
+    var d = {
+      title: $("f-title").value.trim(),
+      copy: $("f-copy").value.trim(),
+      theme: $("f-theme").value,
+      body: $("f-body").value.trim(),
+      special: $("f-special").checked
+    };
+
+    // アクセント色をテーマに連動
+    var t = THEMES[d.theme];
+    var accent = t ? t.color : DEFAULT_ACCENT;
+    document.documentElement.style.setProperty("--accent", accent);
+    $("chip-theme").textContent = t
+      ? "テーマ：" + d.theme + " → " + t.name
+      : "テーマ未指定 → AIが色を推定";
+
+    // コピー字数チェック（推奨15〜20字・最大22字）
+    var n = charCount(d.copy);
+    var counter = $("copy-counter");
+    var chipCopy = $("chip-copy");
+    counter.className = "counter";
+    if (n === 0) {
+      counter.textContent = "未定として出力";
+      chipCopy.textContent = "コピー：未定（AIが凝縮）";
+      chipCopy.classList.remove("alert");
+    } else {
+      var state, cls;
+      if (n <= 14) { state = "やや短め（推奨15〜20字）"; cls = "warn"; }
+      else if (n <= 20) { state = "適正"; cls = "ok"; }
+      else if (n <= 22) { state = "上限内（最大22字）"; cls = "warn"; }
+      else { state = "22字超過！短縮してください"; cls = "bad"; }
+      counter.textContent = n + "字 ・ " + state;
+      counter.classList.add(cls);
+      chipCopy.textContent = "コピー：" + n + "字";
+      chipCopy.classList.toggle("alert", n > 22);
+    }
+
+    // プレビュー
+    var pv = $("pv-copy");
+    if (d.copy) {
+      pv.textContent = d.copy;
+      pv.classList.remove("empty");
+    } else {
+      pv.textContent = "コピー未定（AIがタイトルから凝縮）";
+      pv.classList.add("empty");
+    }
+
+    $("chip-special").hidden = !d.special;
+    $("chip-title").hidden = !!d.title;
+
+    $("out").textContent = buildPrompt(d);
+    $("out-fix").textContent = buildFix(d.copy);
+  }
+
+  // --- 貼り付け解析 → フィールド反映 ---
+  function applyParse() {
+    var text = $("paste").value;
+    if (!text.trim()) return;
+    var r = parseNotion(text);
+    $("f-title").value = r.title;
+    $("f-copy").value = r.copy;
+    $("f-theme").value = THEMES[r.theme] ? r.theme : "";
+    $("f-body").value = r.body;
+    render();
+  }
+
+  // --- コピー ---
+  function copyText(text, btn, doneLabel) {
+    function done() {
+      var orig = btn.textContent;
+      btn.textContent = doneLabel;
+      setTimeout(function () { btn.textContent = orig; }, 1600);
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done, function () { fallback(); });
+    } else {
+      fallback();
+    }
+    function fallback() {
+      var ta = document.createElement("textarea");
+      ta.value = text;
+      ta.style.position = "fixed";
+      ta.style.opacity = "0";
+      document.body.appendChild(ta);
+      ta.select();
+      try { document.execCommand("copy"); done(); } catch (e) { /* noop */ }
+      document.body.removeChild(ta);
+    }
+  }
+
+  // --- イベント ---
+  $("paste").addEventListener("input", applyParse);
+
+  ["f-title", "f-copy", "f-body"].forEach(function (id) {
+    $(id).addEventListener("input", render);
+  });
+  $("f-theme").addEventListener("change", render);
+  $("f-special").addEventListener("change", render);
+
+  $("btn-copy").addEventListener("click", function () {
+    copyText($("out").textContent, this, "✓ コピーしました");
+  });
+  $("btn-copy-fix").addEventListener("click", function () {
+    copyText($("out-fix").textContent, this, "✓ コピーしました");
+  });
+
+  $("btn-sample").addEventListener("click", function () {
+    $("paste").value =
+"会議メモをCopilotで3分で議事録にする手順\n" +
+"カバーコピー：未定\n" +
+"テーマ：Copilot活用\n" +
+"ステータス：下書き\n" +
+"\n" +
+"毎週の定例会議のあと、メモを議事録に清書する作業に30分かけていませんか。\n" +
+"この記事では、Teams会議のメモをCopilotに渡して3分で配布可能な議事録に変える手順を、実際のプロンプトつきで紹介します。\n" +
+"ポイントは「決定事項・宿題・期限」の3項目に絞って抽出させること。フォーマットを固定すれば毎回同じ品質で出てきます。";
+    applyParse();
+  });
+
+  $("btn-clear").addEventListener("click", function () {
+    $("paste").value = "";
+    $("f-title").value = "";
+    $("f-copy").value = "";
+    $("f-theme").value = "";
+    $("f-body").value = "";
+    $("f-special").checked = false;
+    render();
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>
