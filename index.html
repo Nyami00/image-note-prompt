@@ -3,23 +3,23 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="theme-color" content="#0A1023">
-<title>noteカバー画像 プロンプトメーカー v1.0</title>
+<meta name="theme-color" content="#FFFFFF">
+<title>noteカバー画像 プロンプトメーカー v1.1</title>
 <style>
   :root {
-    --bg0: #080D1F;
-    --bg1: #101C42;
-    --surface: rgba(255, 255, 255, 0.045);
-    --surface-2: rgba(255, 255, 255, 0.08);
-    --line: rgba(255, 255, 255, 0.13);
-    --ink: #F2F4F8;
-    --ink-2: #A8B2CE;
-    --ink-3: #707B9E;
-    --accent: #F5872E;
-    --ok: #4CC38A;
-    --warn: #F2C230;
-    --bad: #F26D6D;
-    --radius: 10px;
+    --bg: #F7F7F7;
+    --card: #FFFFFF;
+    --line: #E6E8E8;
+    --ink: #08131A;
+    --ink-2: #6D7578;
+    --ink-3: #9DA4A7;
+    --cta: #08B283;          /* note風の緑（UI固定） */
+    --cta-ink: #FFFFFF;
+    --accent: #F5872E;       /* カバーのアクセント色（テーマ連動） */
+    --ok: #0A9B76;
+    --warn: #B45309;
+    --bad: #DC2626;
+    --radius: 12px;
     --font: "Hiragino Kaku Gothic ProN", "Hiragino Sans", "Noto Sans JP", "Yu Gothic UI", Meiryo, sans-serif;
   }
 
@@ -31,55 +31,57 @@
 
   body {
     font-family: var(--font);
-    background: linear-gradient(160deg, var(--bg0) 0%, var(--bg1) 70%, #16255C 100%);
-    background-attachment: fixed;
+    background: var(--bg);
     color: var(--ink);
     line-height: 1.7;
     min-height: 100vh;
     font-size: 15px;
   }
 
-  .wrap { max-width: 1180px; margin: 0 auto; padding: 0 20px 64px; }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 0 20px 56px; }
 
-  /* ---------- header ---------- */
-  header {
-    position: relative;
-    padding: 44px 0 30px;
-    overflow: hidden;
+  /* ---------- topbar（note風） ---------- */
+  .topbar {
+    background: var(--card);
+    border-bottom: 1px solid var(--line);
   }
-  header::before {
-    content: "";
-    position: absolute;
-    top: -60px; right: -12%;
-    width: 55%; height: 220px;
-    background: linear-gradient(100deg, transparent 0%, var(--accent) 100%);
-    opacity: 0.16;
-    transform: skewX(-24deg);
-    pointer-events: none;
-    transition: background 0.4s;
+  .topbar-inner {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 12px 20px;
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
   }
+  .brand { font-weight: 800; font-size: 17px; letter-spacing: 0.01em; }
+  .brand .dot { color: var(--cta); }
+  .topbar-sub { color: var(--ink-2); font-size: 12.5px; }
+
+  /* ---------- hero ---------- */
+  .hero { padding: 36px 0 26px; }
   .eyebrow {
     font-size: 11px;
-    letter-spacing: 0.22em;
-    color: var(--accent);
+    letter-spacing: 0.2em;
+    color: var(--cta);
     font-weight: 700;
     text-transform: uppercase;
-    transition: color 0.4s;
   }
-  header h1 {
-    font-size: clamp(24px, 4.2vw, 38px);
-    font-weight: 900;
+  .hero h1 {
+    font-size: clamp(22px, 3.8vw, 34px);
+    font-weight: 800;
     letter-spacing: 0.01em;
     text-wrap: balance;
     margin: 6px 0 8px;
   }
-  header p { color: var(--ink-2); font-size: 13.5px; max-width: 46em; }
+  .hero p { color: var(--ink-2); font-size: 13.5px; max-width: 46em; }
+  .hero .byline { margin-top: 8px; font-size: 13px; color: var(--ink-2); }
+  .hero .byline strong { color: var(--ink); font-weight: 800; }
 
   /* ---------- layout ---------- */
   .grid {
     display: grid;
     grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
-    gap: 26px;
+    gap: 24px;
     align-items: start;
   }
   @media (max-width: 960px) {
@@ -90,14 +92,13 @@
   .col-out { position: sticky; top: 20px; }
 
   .card {
-    background: var(--surface);
+    background: var(--card);
     border: 1px solid var(--line);
     border-radius: var(--radius);
-    padding: 20px;
-    backdrop-filter: blur(6px);
+    padding: 22px;
   }
   .card h2 {
-    font-size: 15px;
+    font-size: 15.5px;
     font-weight: 800;
     margin-bottom: 4px;
     display: flex;
@@ -108,21 +109,20 @@
     flex: none;
     width: 22px; height: 22px;
     border-radius: 50%;
-    background: var(--accent);
-    color: var(--bg0);
+    background: var(--cta);
+    color: var(--cta-ink);
     font-size: 12px;
-    font-weight: 900;
+    font-weight: 800;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    transition: background 0.4s;
   }
   .card .desc { color: var(--ink-2); font-size: 12.5px; margin-bottom: 12px; }
 
   /* ---------- inputs ---------- */
   textarea, input[type="text"], select {
     width: 100%;
-    background: rgba(5, 9, 24, 0.55);
+    background: #FCFCFC;
     border: 1px solid var(--line);
     border-radius: 8px;
     color: var(--ink);
@@ -132,7 +132,7 @@
     line-height: 1.6;
   }
   textarea:focus, input:focus, select:focus {
-    outline: 2px solid var(--accent);
+    outline: 2px solid var(--cta);
     outline-offset: -1px;
     border-color: transparent;
   }
@@ -159,12 +159,13 @@
     align-items: baseline;
     gap: 10px;
     margin-bottom: 5px;
+    flex-wrap: wrap;
   }
   label { font-size: 12.5px; font-weight: 700; color: var(--ink-2); }
   .counter { font-size: 12px; font-variant-numeric: tabular-nums; color: var(--ink-3); }
-  .counter.ok { color: var(--ok); }
-  .counter.warn { color: var(--warn); }
-  .counter.bad { color: var(--bad); font-weight: 700; }
+  .counter.ok { color: var(--ok); font-weight: 700; }
+  .counter.warn { color: var(--warn); font-weight: 700; }
+  .counter.bad { color: var(--bad); font-weight: 800; }
 
   .btn-row { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
   button {
@@ -172,27 +173,27 @@
     font-size: 13px;
     font-weight: 700;
     border: 1px solid var(--line);
-    border-radius: 8px;
-    background: var(--surface-2);
+    border-radius: 999px;
+    background: var(--card);
     color: var(--ink);
-    padding: 8px 14px;
+    padding: 8px 18px;
     cursor: pointer;
     transition: background 0.15s, transform 0.1s;
   }
-  button:hover { background: rgba(255, 255, 255, 0.14); }
+  button:hover { background: #F1F3F3; }
   button:active { transform: translateY(1px); }
-  button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  button:focus-visible { outline: 2px solid var(--cta); outline-offset: 2px; }
   button.primary {
-    background: var(--accent);
+    background: var(--cta);
     border-color: transparent;
-    color: #0A1023;
-    font-size: 14px;
-    font-weight: 900;
-    padding: 12px 18px;
+    color: var(--cta-ink);
+    font-size: 14.5px;
+    font-weight: 800;
+    padding: 13px 18px;
     width: 100%;
-    transition: background 0.4s, filter 0.15s, transform 0.1s;
+    transition: filter 0.15s, transform 0.1s;
   }
-  button.primary:hover { filter: brightness(1.08); }
+  button.primary:hover { filter: brightness(1.06); background: var(--cta); }
 
   .toggle {
     display: flex;
@@ -204,9 +205,9 @@
     color: var(--ink-2);
     font-weight: 700;
   }
-  .toggle input { accent-color: var(--accent); width: 16px; height: 16px; cursor: pointer; }
+  .toggle input { accent-color: var(--cta); width: 16px; height: 16px; cursor: pointer; }
 
-  /* ---------- preview ---------- */
+  /* ---------- カバープレビュー（実画像の見た目＝濃紺のまま） ---------- */
   .preview {
     container-type: inline-size;
     aspect-ratio: 1.91 / 1;
@@ -214,7 +215,7 @@
     position: relative;
     overflow: hidden;
     background: linear-gradient(115deg, #0A1330 0%, #16295E 55%, #1D3A80 100%);
-    border: 1px solid var(--line);
+    margin-bottom: 4px;
   }
   .preview .band {
     position: absolute;
@@ -239,21 +240,31 @@
     border: 1px dashed rgba(255, 255, 255, 0.28);
     border-radius: 4px;
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
+    gap: 2.2cqw;
     padding: 2%;
+  }
+  .preview .pv-icon {
+    width: 6.5cqw;
+    height: 6.5cqw;
+    flex: none;
+    fill: var(--accent);
+    filter: drop-shadow(0 1px 6px rgba(0, 0, 0, 0.3));
+    transition: fill 0.4s;
   }
   .preview .safe-label {
     position: absolute;
     bottom: calc(20% - 1.7em);
     left: 20%;
     font-size: 10px;
-    color: rgba(255, 255, 255, 0.4);
+    color: rgba(255, 255, 255, 0.45);
     letter-spacing: 0.08em;
   }
   .preview .copy-text {
     font-weight: 900;
-    font-size: 7.2cqw;
+    font-size: 7cqw;
     line-height: 1.35;
     text-align: center;
     color: #F6F7FA;
@@ -264,10 +275,11 @@
     -webkit-box-orient: vertical;
     word-break: break-word;
   }
-  .preview .copy-text.empty { color: rgba(255, 255, 255, 0.35); font-size: 4cqw; font-weight: 700; }
+  .preview .copy-text.empty { color: rgba(255, 255, 255, 0.38); font-size: 4cqw; font-weight: 700; }
+  .pv-note { color: var(--ink-3); font-size: 11.5px; margin-bottom: 10px; }
 
   /* ---------- chips ---------- */
-  .chips { display: flex; gap: 8px; flex-wrap: wrap; margin: 12px 0; }
+  .chips { display: flex; gap: 8px; flex-wrap: wrap; margin: 10px 0 12px; }
   .chip {
     display: inline-flex;
     align-items: center;
@@ -275,10 +287,10 @@
     font-size: 12px;
     font-weight: 700;
     color: var(--ink-2);
-    background: var(--surface-2);
+    background: #F1F3F3;
     border: 1px solid var(--line);
     border-radius: 999px;
-    padding: 3px 11px;
+    padding: 3px 12px;
   }
   .chip .dot {
     width: 10px; height: 10px;
@@ -287,19 +299,19 @@
     flex: none;
     transition: background 0.4s;
   }
-  .chip.alert { color: var(--bad); border-color: var(--bad); }
-  .chip.special { color: var(--warn); border-color: var(--warn); }
+  .chip.alert { color: var(--bad); border-color: var(--bad); background: #FEF2F2; }
+  .chip.special { color: var(--warn); border-color: var(--warn); background: #FFFBEB; }
 
   /* ---------- output ---------- */
   pre.out {
-    background: rgba(5, 9, 24, 0.65);
+    background: #F7F8F8;
     border: 1px solid var(--line);
     border-radius: 8px;
     padding: 14px;
     font-family: var(--font);
     font-size: 12.5px;
     line-height: 1.75;
-    color: var(--ink-2);
+    color: #3F4A50;
     white-space: pre-wrap;
     word-break: break-word;
     max-height: 320px;
@@ -322,28 +334,33 @@
     flex: none;
     width: 24px; height: 24px;
     border-radius: 50%;
-    border: 1px solid var(--accent);
-    color: var(--accent);
-    font-weight: 900;
+    border: 1.5px solid var(--cta);
+    color: var(--cta);
+    font-weight: 800;
     font-size: 13px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     margin-top: 2px;
-    transition: color 0.4s, border-color 0.4s;
   }
   details { margin-top: 16px; color: var(--ink-2); font-size: 13px; }
   summary { cursor: pointer; font-weight: 700; color: var(--ink); }
-  summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  summary:focus-visible { outline: 2px solid var(--cta); outline-offset: 2px; }
   details ul { padding-left: 1.4em; margin-top: 8px; display: grid; gap: 5px; }
 
   footer.meta {
     margin-top: 40px;
-    padding-top: 16px;
+    padding-top: 18px;
     border-top: 1px solid var(--line);
-    color: var(--ink-3);
-    font-size: 12px;
+    color: var(--ink-2);
+    font-size: 12.5px;
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
   }
+  footer.meta .credit { font-weight: 800; color: var(--ink); }
+  footer.meta .credit .dot { color: var(--cta); }
 
   @media (prefers-reduced-motion: reduce) {
     * { transition: none !important; }
@@ -351,12 +368,21 @@
 </style>
 </head>
 <body>
+
+<div class="topbar">
+  <div class="topbar-inner">
+    <span class="brand">nyami<span class="dot">.</span></span>
+    <span class="topbar-sub">noteカバー画像 プロンプトメーカー v1.1</span>
+  </div>
+</div>
+
 <div class="wrap">
 
-<header>
+<header class="hero">
   <div class="eyebrow">note cover image — prompt maker</div>
-  <h1>noteカバー画像 プロンプトメーカー <span style="font-size:0.55em;color:var(--ink-2);font-weight:700;">v1.0</span></h1>
-  <p>Notionの記事をそのまま貼るだけで、手動作成用メタプロンプトが完成。カバー画像係v2正本（2026-07-06改訂・ボールドタイポ×ダイナミック背景）と同一設計。自動生成分とnoteフィード上で見た目が揃います。</p>
+  <h1>Notionの記事を貼るだけで、カバー画像プロンプトが完成。</h1>
+  <p>手動作成用メタプロンプト v1.1。カバー画像係v2正本（2026-07-06改訂・ボールドタイポ×ダイナミック背景）準拠＋小さなフラットアイコン必須ルール入り。自動生成分（v2/v3）とnoteフィード上で見た目が揃います。</p>
+  <p class="byline">made by <strong>nyami</strong></p>
 </header>
 
 <main class="grid">
@@ -436,9 +462,13 @@
       <div class="preview" aria-hidden="true">
         <div class="glow"></div>
         <div class="band"></div>
-        <div class="safe"><div class="copy-text empty" id="pv-copy">コピー未定（AIがタイトルから凝縮）</div></div>
+        <div class="safe">
+          <svg class="pv-icon" viewBox="0 0 24 24"><path d="M12 2l2.4 7.6L22 12l-7.6 2.4L12 22l-2.4-7.6L2 12l7.6-2.4z"/></svg>
+          <div class="copy-text empty" id="pv-copy">コピー未定（AIがタイトルから凝縮）</div>
+        </div>
         <div class="safe-label">セーフゾーン60%（一覧表示で切れない範囲）</div>
       </div>
+      <p class="pv-note">※イメージ確認用。アイコンは実際にはモチーフをフラットデザイン化したものが入ります</p>
 
       <div class="chips">
         <span class="chip"><span class="dot" id="chip-dot"></span><span id="chip-theme">テーマ未指定 → AIが色を推定</span></span>
@@ -473,6 +503,7 @@
           <li>文字規則・構図・禁止事項・アクセント色表・1.91:1・セーフゾーン60%は、運用ページの「画像生成プロンプトテンプレ（正本）」と同一。手動作成分だけフィードで浮くことを防ぐ</li>
           <li>v2で人間（Cowork）が事前に行う3判断（①コピー22字判定・短縮 ②テーマ→色 ③モチーフ選定）を、AI側の【手順】に内蔵。タイトルと本文を貼るだけで完結する</li>
           <li>禁止事項に「特定の企業・所属を想起させる要素」を追加（note-nyamiスキル鉄則1：所属特定の禁止）</li>
+          <li>v1.1：モチーフを単純化した「小さなフラットデザインのアイコン」をコピー近くに必ず1つ入れる規則を追加（禁止事項の「要素の詰め込み」からこの1つだけを除外）</li>
           <li>「特別版」スイッチ：リアル連載の主力記事で配色を変えたいときのみチェック。デフォルトはブランド標準</li>
         </ul>
       </details>
@@ -482,7 +513,8 @@
 </main>
 
 <footer class="meta">
-  noteカバー画像 手動作成用メタプロンプト v1.0（2026-07-13）／デザインシステム：カバー画像係v2正本（2026-07-06改訂）準拠
+  <span class="credit">made by nyami<span class="dot">.</span></span>
+  <span>noteカバー画像 手動作成用メタプロンプト v1.1／カバー画像係v2正本（2026-07-06改訂）準拠</span>
 </footer>
 
 </div>
@@ -577,7 +609,7 @@
     return r;
   }
 
-  // --- メタプロンプト生成（v1.0の文面そのまま） ---
+  // --- メタプロンプト生成（v1.1：小型フラットアイコン規則入り） ---
   function buildPrompt(d) {
     var head = d.special ? "特別版\n\n" : "";
     return head +
@@ -612,11 +644,12 @@ d.body + "\n" +
 "・静的なフラット構成は禁止。動きのある構図にする：斜めに走る大胆な色面分割、または奥行きのあるグラデーションと光の差し込み。視線が自然にコピーへ流れ込む構図\n" +
 "・基調は濃紺のグラデーション（深い紺→明るい光へ）、アクセントは手順2の1色のみ。光・エッジ・色面の一部として強く効かせる\n" +
 "・モチーフは画面からはみ出すほど大きくスケール感を持たせ、シルエットや半透明で背景に大胆に配置する（文字の可読性は侵さない）\n" +
+"・さらに、手順3と同じモチーフを単純化した「小さなフラットデザインのアイコン」を必ず1つ入れる：単色〜2色のシンプルな面構成で、コピーの直上または直下のセーフゾーン内に配置。大きさはコピーの文字高さ程度まで。文字を覆わない\n" +
 "・微細なノイズ／光のグロー可。雑誌の特集扉やイベントのキービジュアルのような熱量を出す\n" +
 "※冒頭に「特別版」と指定された場合のみ、基調色を記事に合う配色へ変えてよい（文字規則・セーフゾーン・禁止事項は維持）\n" +
 "\n" +
 "【禁止】\n" +
-"人物の顔／実在のロゴ・商標・製品UIの模倣／特定の企業・所属を想起させる要素／透かし／要素の詰め込み（モチーフの複数配置・装飾小物）／指定外の文字／文字を覆う装飾\n" +
+"人物の顔／実在のロゴ・商標・製品UIの模倣／特定の企業・所属を想起させる要素／透かし／要素の詰め込み（背景の大型モチーフ1つ＋小型フラットアイコン1つ以外の装飾要素は入れない）／指定外の文字／文字を覆う装飾\n" +
 "\n" +
 "【生成後】\n" +
 "画像内の文字とカバーコピーを一字一句照合し、一致・不一致を1行で報告してください。";
@@ -646,7 +679,7 @@ d.body + "\n" +
       special: $("f-special").checked
     };
 
-    // アクセント色をテーマに連動
+    // カバーのアクセント色をテーマに連動（プレビューとチップに反映）
     var t = THEMES[d.theme];
     var accent = t ? t.color : DEFAULT_ACCENT;
     document.documentElement.style.setProperty("--accent", accent);
