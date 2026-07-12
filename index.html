@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#FFFFFF">
-<title>noteカバー画像 プロンプトメーカー v1.1</title>
+<title>noteカバー画像 プロンプトメーカー v1.2</title>
 <style>
   :root {
     --bg: #F7F7F7;
@@ -207,51 +207,45 @@
   }
   .toggle input { accent-color: var(--cta); width: 16px; height: 16px; cursor: pointer; }
 
-  /* ---------- カバープレビュー（実画像の見た目＝濃紺のまま） ---------- */
+  /* ---------- カバープレビュー（note風フラット＝実画像の仕上がりイメージ） ---------- */
   .preview {
     container-type: inline-size;
     aspect-ratio: 1.91 / 1;
     border-radius: 8px;
     position: relative;
     overflow: hidden;
-    background: linear-gradient(115deg, #0A1330 0%, #16295E 55%, #1D3A80 100%);
+    background: linear-gradient(135deg, #FEFDFB 0%, #F4F2EB 100%);
+    border: 1px solid var(--line);
     margin-bottom: 4px;
   }
   .preview .band {
     position: absolute;
-    inset: -20% auto -20% 58%;
-    width: 70%;
-    background: linear-gradient(100deg, var(--accent), transparent 85%);
-    opacity: 0.42;
+    inset: -20% auto -20% 64%;
+    width: 62%;
+    background: linear-gradient(100deg, var(--accent), transparent 90%);
+    opacity: 0.14;
     transform: skewX(-18deg);
-    transition: background 0.4s;
-  }
-  .preview .glow {
-    position: absolute;
-    top: -30%; right: -10%;
-    width: 55%; height: 90%;
-    background: radial-gradient(closest-side, var(--accent), transparent);
-    opacity: 0.22;
     transition: background 0.4s;
   }
   .preview .safe {
     position: absolute;
     inset: 20%;
-    border: 1px dashed rgba(255, 255, 255, 0.28);
+    border: 1px dashed rgba(16, 32, 62, 0.25);
     border-radius: 4px;
     display: flex;
-    flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 2.2cqw;
     padding: 2%;
   }
   .preview .pv-icon {
-    width: 6.5cqw;
-    height: 6.5cqw;
-    flex: none;
+    position: absolute;
+    right: -1%;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 16cqw;
+    height: 16cqw;
     fill: var(--accent);
-    filter: drop-shadow(0 1px 6px rgba(0, 0, 0, 0.3));
+    opacity: 0.22;
     transition: fill 0.4s;
   }
   .preview .safe-label {
@@ -259,23 +253,33 @@
     bottom: calc(20% - 1.7em);
     left: 20%;
     font-size: 10px;
-    color: rgba(255, 255, 255, 0.45);
+    color: rgba(16, 32, 62, 0.45);
     letter-spacing: 0.08em;
   }
+  .preview .pv-credit {
+    position: absolute;
+    right: 2.5%;
+    bottom: 3%;
+    font-size: 2.3cqw;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    color: rgba(16, 32, 62, 0.4);
+  }
   .preview .copy-text {
+    position: relative;
+    z-index: 1;
     font-weight: 900;
     font-size: 7cqw;
     line-height: 1.35;
     text-align: center;
-    color: #F6F7FA;
-    text-shadow: 0 2px 18px rgba(0, 0, 0, 0.35);
+    color: #10203E;
     overflow: hidden;
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     word-break: break-word;
   }
-  .preview .copy-text.empty { color: rgba(255, 255, 255, 0.38); font-size: 4cqw; font-weight: 700; }
+  .preview .copy-text.empty { color: rgba(16, 32, 62, 0.35); font-size: 4cqw; font-weight: 700; }
   .pv-note { color: var(--ink-3); font-size: 11.5px; margin-bottom: 10px; }
 
   /* ---------- chips ---------- */
@@ -372,7 +376,7 @@
 <div class="topbar">
   <div class="topbar-inner">
     <span class="brand">nyami<span class="dot">.</span></span>
-    <span class="topbar-sub">noteカバー画像 プロンプトメーカー v1.1</span>
+    <span class="topbar-sub">noteカバー画像 プロンプトメーカー v1.2</span>
   </div>
 </div>
 
@@ -381,7 +385,7 @@
 <header class="hero">
   <div class="eyebrow">note cover image — prompt maker</div>
   <h1>Notionの記事を貼るだけで、カバー画像プロンプトが完成。</h1>
-  <p>手動作成用メタプロンプト v1.1。カバー画像係v2正本（2026-07-06改訂・ボールドタイポ×ダイナミック背景）準拠＋小さなフラットアイコン必須ルール入り。自動生成分（v2/v3）とnoteフィード上で見た目が揃います。</p>
+  <p>手動作成用メタプロンプト v1.2。生成する画像はnoteの雰囲気を踏襲したフラットデザイン（明るい背景×極太コピー）で、モチーフのフラットアイコンがコピーの横・背後に薄く入り、右下に「nyami」クレジットが入ります。コピー字数・アクセント色表・セーフゾーンなどの規則はカバー画像係v2正本（2026-07-06改訂）準拠。</p>
   <p class="byline">made by <strong>nyami</strong></p>
 </header>
 
@@ -460,15 +464,15 @@
       <h2><span class="step">3</span>プロンプト完成 → コピーしてChatGPT等へ</h2>
 
       <div class="preview" aria-hidden="true">
-        <div class="glow"></div>
         <div class="band"></div>
         <div class="safe">
           <svg class="pv-icon" viewBox="0 0 24 24"><path d="M12 2l2.4 7.6L22 12l-7.6 2.4L12 22l-2.4-7.6L2 12l7.6-2.4z"/></svg>
           <div class="copy-text empty" id="pv-copy">コピー未定（AIがタイトルから凝縮）</div>
         </div>
+        <div class="pv-credit">nyami</div>
         <div class="safe-label">セーフゾーン60%（一覧表示で切れない範囲）</div>
       </div>
-      <p class="pv-note">※イメージ確認用。アイコンは実際にはモチーフをフラットデザイン化したものが入ります</p>
+      <p class="pv-note">※イメージ確認用。実際はモチーフをフラット化したアイコンがコピーの横・背後に薄く入り、右下にnyamiクレジットが入ります</p>
 
       <div class="chips">
         <span class="chip"><span class="dot" id="chip-dot"></span><span id="chip-theme">テーマ未指定 → AIが色を推定</span></span>
@@ -500,10 +504,10 @@
       <details>
         <summary>設計根拠（v2正本との整合点）</summary>
         <ul>
-          <li>文字規則・構図・禁止事項・アクセント色表・1.91:1・セーフゾーン60%は、運用ページの「画像生成プロンプトテンプレ（正本）」と同一。手動作成分だけフィードで浮くことを防ぐ</li>
+          <li>文字規則（コピー1行・最大22字）・アクセント色表・1.91:1・セーフゾーン60%・禁止事項の骨格は、運用ページの「画像生成プロンプトテンプレ（正本）」と同一</li>
+          <li>v1.2：画像の基調をnote風フラットデザイン（明るい背景×濃色文字）へ変更。モチーフは「小さなフラットデザインのアイコン」としてコピーの横・背後に薄く1つだけ配置し、右下に小さな「nyami」クレジットを入れる（透かし禁止の唯一の例外）</li>
           <li>v2で人間（Cowork）が事前に行う3判断（①コピー22字判定・短縮 ②テーマ→色 ③モチーフ選定）を、AI側の【手順】に内蔵。タイトルと本文を貼るだけで完結する</li>
           <li>禁止事項に「特定の企業・所属を想起させる要素」を追加（note-nyamiスキル鉄則1：所属特定の禁止）</li>
-          <li>v1.1：モチーフを単純化した「小さなフラットデザインのアイコン」をコピー近くに必ず1つ入れる規則を追加（禁止事項の「要素の詰め込み」からこの1つだけを除外）</li>
           <li>「特別版」スイッチ：リアル連載の主力記事で配色を変えたいときのみチェック。デフォルトはブランド標準</li>
         </ul>
       </details>
@@ -514,7 +518,7 @@
 
 <footer class="meta">
   <span class="credit">made by nyami<span class="dot">.</span></span>
-  <span>noteカバー画像 手動作成用メタプロンプト v1.1／カバー画像係v2正本（2026-07-06改訂）準拠</span>
+  <span>noteカバー画像 手動作成用メタプロンプト v1.2／文字規則・色表・セーフゾーンはカバー画像係v2正本（2026-07-06改訂）準拠</span>
 </footer>
 
 </div>
@@ -609,7 +613,7 @@
     return r;
   }
 
-  // --- メタプロンプト生成（v1.1：小型フラットアイコン規則入り） ---
+  // --- メタプロンプト生成（v1.2：note風フラット・nyamiクレジット入り） ---
   function buildPrompt(d) {
     var head = d.special ? "特別版\n\n" : "";
     return head +
@@ -633,23 +637,23 @@ d.body + "\n" +
 "4. 決定した「コピー／アクセント色／モチーフ」を1行で書き、承認を待たずにそのまま生成する。\n" +
 "\n" +
 "【文字（最重要・精度厳守）】\n" +
-"画像に入れる文字は手順1のカバーコピー1行だけです。一字一句そのまま、誤字・脱字・字体崩れなしで描画してください。\n" +
+"画像に入れる文字は、手順1のカバーコピー1行と、右下の小さなクレジット「nyami」の2つだけです。カバーコピーは一字一句そのまま、誤字・脱字・字体崩れなしで描画してください。\n" +
 "・極太の日本語ゴシック体。画像幅の80〜90%を使う特大サイズで、改行は最大2行まで\n" +
-"・文字色は背景と最大コントラスト（濃色背景×オフホワイト文字を基本）。可読性最優先\n" +
+"・文字色は背景と最大コントラスト（明るい背景×濃色文字（黒〜濃紺）を基本）。可読性最優先\n" +
 "・文字は画像中央60%のセーフゾーン内に収める（一覧表示で上下左右が切れるため）\n" +
-"・指定した文字以外の文字・英字・数字は一切入れない\n" +
+"・クレジット「nyami」は画像右下の隅に小さく控えめに入れる（小サイズ・低コントラスト。英字はこのクレジットのみ可）\n" +
+"・上記2つ以外の文字・英字・数字は一切入れない\n" +
 "\n" +
 "【構図・スタイル（固定）】\n" +
 "・横長1.91:1（1920×1006目安）\n" +
-"・静的なフラット構成は禁止。動きのある構図にする：斜めに走る大胆な色面分割、または奥行きのあるグラデーションと光の差し込み。視線が自然にコピーへ流れ込む構図\n" +
-"・基調は濃紺のグラデーション（深い紺→明るい光へ）、アクセントは手順2の1色のみ。光・エッジ・色面の一部として強く効かせる\n" +
-"・モチーフは画面からはみ出すほど大きくスケール感を持たせ、シルエットや半透明で背景に大胆に配置する（文字の可読性は侵さない）\n" +
-"・さらに、手順3と同じモチーフを単純化した「小さなフラットデザインのアイコン」を必ず1つ入れる：単色〜2色のシンプルな面構成で、コピーの直上または直下のセーフゾーン内に配置。大きさはコピーの文字高さ程度まで。文字を覆わない\n" +
-"・微細なノイズ／光のグロー可。雑誌の特集扉やイベントのキービジュアルのような熱量を出す\n" +
+"・noteの雰囲気を踏襲したフラットデザイン：明るく清潔な背景（オフホワイト〜淡いトーンの単色または控えめなグラデーション）、余白を活かしたシンプルで洗練された構成\n" +
+"・アクセントは手順2の1色のみ。色面や図形として控えめに効かせ、視線が自然にコピーへ流れ込む構図にする\n" +
+"・手順3のモチーフは「小さなフラットデザインのアイコン」として必ず1つ描く：単色〜2色のシンプルな面構成で、コピーの横または背後に薄く（半透明・淡色）配置する。文字の可読性は侵さない\n" +
+"・質感はフラット基調（ごく微細なノイズ程度は可）。写実表現・過剰な立体感・過剰な装飾は避ける\n" +
 "※冒頭に「特別版」と指定された場合のみ、基調色を記事に合う配色へ変えてよい（文字規則・セーフゾーン・禁止事項は維持）\n" +
 "\n" +
 "【禁止】\n" +
-"人物の顔／実在のロゴ・商標・製品UIの模倣／特定の企業・所属を想起させる要素／透かし／要素の詰め込み（背景の大型モチーフ1つ＋小型フラットアイコン1つ以外の装飾要素は入れない）／指定外の文字／文字を覆う装飾\n" +
+"人物の顔／実在のロゴ・商標・製品UIの模倣／特定の企業・所属を想起させる要素／透かし（右下の「nyami」クレジットは除く）／要素の詰め込み（アイコンの複数配置・装飾小物）／指定外の文字／文字を覆う装飾\n" +
 "\n" +
 "【生成後】\n" +
 "画像内の文字とカバーコピーを一字一句照合し、一致・不一致を1行で報告してください。";
